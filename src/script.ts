@@ -36,10 +36,10 @@ async function main() {
 
   // Commit changes if any unused items were found and deleted
   try {
-    // await model.flushChanges();
-    // await workingCopy.commitToRepository("trunk", {
-    //   commitMessage: "Deleted unused items.",
-    // });
+    await model.flushChanges();
+    await workingCopy.commitToRepository("trunk", {
+      commitMessage: "Deleted unused items.",
+    });
     console.log("Changes committed successfully!");
   } catch (error) {
     console.error(`An error occurred during execution: ${error}`);
@@ -75,9 +75,9 @@ async function findUnusedMicroflows(model, moduleName, unused, serializedCache) 
 // Similar to microflows, find and delete unused nanoflows
 async function findUnusedNanoflows(model, moduleName, unused, serializedCache) {
   // Filter nanoflows within the specified module
-  const nanoflowsInModule = (await model.allNanoflows()).filter((nanoflow) =>
-    nanoflow.qualifiedName.startsWith(moduleName + ".")
-  );
+  const nanoflowsInModule = model
+    .allNanoflows()
+    .filter((nanoflow) => nanoflow.qualifiedName.startsWith(moduleName + "."));
 
   // Check each nanoflow for usage and delete if unused
   for (const nanoflow of nanoflowsInModule) {
@@ -94,7 +94,7 @@ async function findUnusedNanoflows(model, moduleName, unused, serializedCache) {
 // Similar to microflows and nanoflows, find and delete unused pages
 async function findUnusedPages(model, moduleName, unused, serializedCache) {
   // Filter pages within the specified module
-  const pagesInModule = (await model.allPages()).filter((page) => page.qualifiedName.startsWith(moduleName + "."));
+  const pagesInModule = model.allPages().filter((page) => page.qualifiedName.startsWith(moduleName + "."));
 
   // Check each page for usage and delete if unused
   for (const page of pagesInModule) {
@@ -112,11 +112,7 @@ async function findUnusedPages(model, moduleName, unused, serializedCache) {
 async function findUsages(model, itemName, serializedCache) {
   let usageCount = 0;
   // Get all items (microflows, nanoflows, pages) in the model
-  const allItems = [
-    ...(await model.allMicroflows()),
-    ...(await model.allNanoflows()),
-    ...(await model.allPages()),
-  ];
+  const allItems = [...model.allMicroflows(), ...model.allNanoflows(), ...model.allPages()];
 
   // Check each item for references to the item being checked
   for (const item of allItems) {
@@ -141,7 +137,7 @@ async function findUsages(model, itemName, serializedCache) {
 async function isUsedInNavigation(model, itemName) {
   let isUsed = false;
   // Load all navigation documents and check for references to the item
-  const navigationDocuments = await model.allNavigationDocuments();
+  const navigationDocuments = model.allNavigationDocuments();
 
   for (const navDoc of navigationDocuments) {
     const navDocContent = await navDoc.load(); // Load the content of each navigation document

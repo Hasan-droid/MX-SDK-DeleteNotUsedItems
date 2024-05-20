@@ -40,10 +40,10 @@ function main() {
         }
         // Commit changes if any unused items were found and deleted
         try {
-            // await model.flushChanges();
-            // await workingCopy.commitToRepository("trunk", {
-            //   commitMessage: "Deleted unused items.",
-            // });
+            yield model.flushChanges();
+            yield workingCopy.commitToRepository("trunk", {
+                commitMessage: "Deleted unused items.",
+            });
             console.log("Changes committed successfully!");
         }
         catch (error) {
@@ -82,7 +82,9 @@ function findUnusedMicroflows(model, moduleName, unused, serializedCache) {
 function findUnusedNanoflows(model, moduleName, unused, serializedCache) {
     return __awaiter(this, void 0, void 0, function* () {
         // Filter nanoflows within the specified module
-        const nanoflowsInModule = (yield model.allNanoflows()).filter((nanoflow) => nanoflow.qualifiedName.startsWith(moduleName + "."));
+        const nanoflowsInModule = model
+            .allNanoflows()
+            .filter((nanoflow) => nanoflow.qualifiedName.startsWith(moduleName + "."));
         // Check each nanoflow for usage and delete if unused
         for (const nanoflow of nanoflowsInModule) {
             const usages = yield findUsages(model, nanoflow.qualifiedName, serializedCache);
@@ -99,7 +101,7 @@ function findUnusedNanoflows(model, moduleName, unused, serializedCache) {
 function findUnusedPages(model, moduleName, unused, serializedCache) {
     return __awaiter(this, void 0, void 0, function* () {
         // Filter pages within the specified module
-        const pagesInModule = (yield model.allPages()).filter((page) => page.qualifiedName.startsWith(moduleName + "."));
+        const pagesInModule = model.allPages().filter((page) => page.qualifiedName.startsWith(moduleName + "."));
         // Check each page for usage and delete if unused
         for (const page of pagesInModule) {
             const usages = yield findUsages(model, page.qualifiedName, serializedCache);
@@ -117,11 +119,7 @@ function findUsages(model, itemName, serializedCache) {
     return __awaiter(this, void 0, void 0, function* () {
         let usageCount = 0;
         // Get all items (microflows, nanoflows, pages) in the model
-        const allItems = [
-            ...(yield model.allMicroflows()),
-            ...(yield model.allNanoflows()),
-            ...(yield model.allPages()),
-        ];
+        const allItems = [...model.allMicroflows(), ...model.allNanoflows(), ...model.allPages()];
         // Check each item for references to the item being checked
         for (const item of allItems) {
             if (item.qualifiedName === itemName)
@@ -147,7 +145,7 @@ function isUsedInNavigation(model, itemName) {
     return __awaiter(this, void 0, void 0, function* () {
         let isUsed = false;
         // Load all navigation documents and check for references to the item
-        const navigationDocuments = yield model.allNavigationDocuments();
+        const navigationDocuments = model.allNavigationDocuments();
         for (const navDoc of navigationDocuments) {
             const navDocContent = yield navDoc.load(); // Load the content of each navigation document
             // Check if the itemName is used in the navigation profiles
