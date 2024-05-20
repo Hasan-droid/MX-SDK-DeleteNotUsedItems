@@ -8,42 +8,52 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const mendixplatformsdk_1 = require("mendixplatformsdk");
+const dotenv_1 = __importDefault(require("dotenv"));
+const chalk_1 = __importDefault(require("chalk"));
+dotenv_1.default.config();
 function main() {
     return __awaiter(this, void 0, void 0, function* () {
         // Specify the module name within the Mendix application
-        const moduleName = "MyFirstModule";
         // Initialize the Mendix SDK client
         const client = new mendixplatformsdk_1.MendixPlatformClient();
         // Connect to the Mendix app using a hidden app ID
-        const app = client.getApp("9609dbc9-f6c5-4f91-bf6b-d2ce7a2308eb");
+        const app = client.getApp(process.env.MENDIX_APP_ID);
         // Create a temporary working copy of the branch use trunk or main
         const workingCopy = yield app.createTemporaryWorkingCopy("trunk");
         // Open the model for the working copy
         const model = yield workingCopy.openModel();
         // Prepare a structure to store unused items
-        const unused = {
-            pages: [],
-            nanoflows: [],
-            otherMicroflows: [],
-        };
-        // Cache for storing serialized data to optimize lookups
-        const serializedCache = {};
-        // Find unused items and log them
-        try {
-            yield findUnusedItems(model, moduleName, unused, serializedCache);
-            console.log("Unused items found:", unused);
-        }
-        catch (error) {
-            console.error(`An error occurred during execution: ${error}`);
+        const allModulesNames = model.allModules().map((module) => module.name);
+        for (const moduleName of allModulesNames) {
+            const unused = {
+                pages: [],
+                nanoflows: [],
+                otherMicroflows: [],
+            };
+            // Cache for storing serialized data to optimize lookups
+            const serializedCache = {};
+            // Find unused items and log them
+            try {
+                console.log(`starting to find unused items in module ${chalk_1.default.white.bold.underline(moduleName)}`);
+                yield findUnusedItems(model, moduleName, unused, serializedCache);
+                console.log("Unused items found:", unused);
+                console.log(chalk_1.default.blue.bold("------------------------------------------"));
+            }
+            catch (error) {
+                console.error(`An error occurred during execution: ${error}`);
+            }
         }
         // Commit changes if any unused items were found and deleted
         try {
-            yield model.flushChanges();
-            yield workingCopy.commitToRepository("trunk", {
-                commitMessage: "Deleted unused items.",
-            });
+            // await model.flushChanges();
+            // await workingCopy.commitToRepository("trunk", {
+            //   commitMessage: "Deleted unused items.",
+            // });
             console.log("Changes committed successfully!");
         }
         catch (error) {
@@ -119,27 +129,40 @@ function findUsages(model, itemName, serializedCache) {
     return __awaiter(this, void 0, void 0, function* () {
         let usageCount = 0;
         // Get all items (microflows, nanoflows, pages) in the model
-        const allItems = [...model.allMicroflows(), ...model.allNanoflows(), ...model.allPages()];
-        // Check each item for references to the item being checked
-        for (const item of allItems) {
-            if (item.qualifiedName === itemName)
-                continue;
-            try {
-                const itemID = item.id;
-                if (!serializedCache[itemID]) {
-                    serializedCache[itemID] = JSON.stringify(yield item.load());
+        const allModulesNames = model.allModules().map((module) => module.name);
+        for (const moduleName of allModulesNames) {
+            const allItems = getItemsFromOneModule(model, moduleName);
+            // Check each item for references to the item being checked
+            for (const item of allItems) {
+                if (item.qualifiedName === itemName)
+                    continue;
+                try {
+                    const itemID = item.id;
+                    if (!serializedCache[itemID]) {
+                        serializedCache[itemID] = JSON.stringify(yield item.load());
+                    }
+                    if (serializedCache[itemID].includes(itemName)) {
+                        usageCount++;
+                    }
                 }
-                if (serializedCache[itemID].includes(itemName)) {
-                    usageCount++;
+                catch (error) {
+                    console.error(`Error processing item ${item.qualifiedName}: ${error}`);
                 }
-            }
-            catch (error) {
-                console.error(`Error processing item ${item.qualifiedName}: ${error}`);
             }
         }
         return usageCount;
     });
 }
+const getItemsFromOneModule = (model, moduleName) => {
+    const microflowsOfThatModule = model
+        .allMicroflows()
+        .filter((microflow) => microflow.qualifiedName.startsWith(moduleName + "."));
+    const nanoflowsOfThatModule = model
+        .allNanoflows()
+        .filter((nanoflow) => nanoflow.qualifiedName.startsWith(moduleName + "."));
+    const pagesOfThatModule = model.allPages().filter((page) => page.qualifiedName.startsWith(moduleName + "."));
+    return [...microflowsOfThatModule, ...nanoflowsOfThatModule, ...pagesOfThatModule];
+};
 // Check if an item is used in navigation
 function isUsedInNavigation(model, itemName) {
     return __awaiter(this, void 0, void 0, function* () {

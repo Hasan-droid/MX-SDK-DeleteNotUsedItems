@@ -10,8 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^4.1.2",
     "cli-table3": "^0.6.3",
     "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.5",
     "json2csv": "^6.0.0-alpha.2",
     "mendixmodelsdk": "^4.77.0",
     "mendixplatformsdk": "^5.1.2"
