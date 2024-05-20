@@ -1,0 +1,22 @@
+{
+  "name": "count-warnings",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node -r source-map-support/register dist/script.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cli-table3": "^0.6.3",
+    "csv-parser": "^3.0.0",
+    "json2csv": "^6.0.0-alpha.2",
+    "mendixmodelsdk": "^4.77.0",
+    "mendixplatformsdk": "^5.1.2"
+  },
+  "devDependencies": {
+    "source-map-support": "^0.5.21"
+  }
+}
