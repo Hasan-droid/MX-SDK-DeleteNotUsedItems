@@ -39,10 +39,10 @@ async function main() {
 
   // Commit changes if any unused items were found and deleted
   try {
-    // await model.flushChanges();
-    // await workingCopy.commitToRepository("trunk", {
-    //   commitMessage: "Deleted unused items.",
-    // });
+    await model.flushChanges();
+    await workingCopy.commitToRepository("trunk", {
+      commitMessage: "Deleted unused items.",
+    });
     console.log("Changes committed successfully!");
   } catch (error) {
     console.error(`An error occurred during execution: ${error}`);
