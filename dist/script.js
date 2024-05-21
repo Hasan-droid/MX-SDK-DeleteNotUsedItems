@@ -50,10 +50,10 @@ function main() {
         }
         // Commit changes if any unused items were found and deleted
         try {
-            // await model.flushChanges();
-            // await workingCopy.commitToRepository("trunk", {
-            //   commitMessage: "Deleted unused items.",
-            // });
+            yield model.flushChanges();
+            yield workingCopy.commitToRepository("trunk", {
+                commitMessage: "Deleted unused items.",
+            });
             console.log("Changes committed successfully!");
         }
         catch (error) {
