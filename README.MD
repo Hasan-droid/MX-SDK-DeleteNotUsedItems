@@ -13,4 +13,16 @@ for large complected projects this tool might not works perfectly due to its alg
 because it traverse each and every modulelooking in all its elements (ex: pages , microflows , nanoflows)
 and takes long time to process , this is might be an area for next development.
 
+## Contributing
+
+We welcome contributions! To ensure the quality of our code, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch from `main` for your feature or bugfix.
+3. Commit your changes to your branch.
+4. Open a pull request to the `main` branch.
+5. One of the maintainers will review your changes and merge them if everything is fine.
+
+Thank you for contributing!
+
 #### Thank you [Sharad Suryavanshi](https://www.linkedin.com/in/sharad-suryavanshi-779210119/) for building this code
