@@ -13,6 +13,14 @@ for large complected projects this tool might not works perfectly due to its alg
 because it traverse each and every module looking in all its elements (ex: pages , microflows , nanoflows)
 and takes long time to process , this is might be an area for next development.
 
+## Installation
+
+1. clone the project.
+2. run script **npm i** in the project root.
+3. add **.env**.
+4. add variable name **MENDIX_APP_ID** and then assign the mendix project ID to it.
+5. run script **npm run start**.
+
 ## Contributing
 
 We welcome contributions! To ensure the quality of our code, please follow these steps:
